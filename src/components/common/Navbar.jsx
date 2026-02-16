@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/cartContext";
 
 const Navbar = () => {
@@ -101,6 +101,8 @@ const Navbar = () => {
               Stores
             </Link>
 
+            {/* Become a Vendor Button - NEW */}
+
             {/* Cart Button */}
             <Link
               to="/cart"
@@ -110,9 +112,11 @@ const Navbar = () => {
                 <span className="text-2xl">🛒</span>
                 <span className="font-medium hidden xl:inline">Cart</span>
                 {/* Cart Badge */}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </div>
             </Link>
 
@@ -131,13 +135,20 @@ const Navbar = () => {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={handleLogin}
+              <NavLink
+                to="/login"
                 className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105"
               >
                 Login
-              </button>
+              </NavLink>
             )}
+            <Link
+              to="/vendor/register"
+              className="hidden xl:flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-4 py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <span>🏪</span>
+              <span>Sell</span>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -236,6 +247,17 @@ const Navbar = () => {
             >
               Stores
             </Link>
+
+            {/* Become a Vendor - Mobile - NEW */}
+            <Link
+              to="/vendor/register"
+              onClick={toggleMobileMenu}
+              className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white rounded-lg font-semibold transition-all duration-300 shadow-md"
+            >
+              <span className="text-xl">🏪</span>
+              <span>Become a Vendor</span>
+            </Link>
+
             <Link
               to="/cart"
               onClick={toggleMobileMenu}
@@ -245,9 +267,11 @@ const Navbar = () => {
                 <span className="text-xl">🛒</span>
                 Cart
               </span>
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                {cartCount}
-              </span>
+              {cartCount > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
             {/* Mobile Login/Logout */}
@@ -271,15 +295,13 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => {
-                    handleLogin();
-                    toggleMobileMenu();
-                  }}
-                  className="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors duration-300"
+                <NavLink
+                  to="/login"
+                  onClick={toggleMobileMenu}
+                  className="block w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-lg font-semibold text-center transition-colors duration-300"
                 >
                   Login
-                </button>
+                </NavLink>
               )}
             </div>
           </div>

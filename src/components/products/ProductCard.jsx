@@ -1,15 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/cartContext";
+import ProductCardSkeleton from "./ProductCardSkeleton";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
-
-    // TODO: Implement cart functionality later
   };
 
   return (
