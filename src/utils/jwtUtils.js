@@ -1,3 +1,5 @@
+import { jwtDecode } from "jwt-decode";
+
 export const getUserIdFromToken = (token) => {
   try {
     const base64Url = token.split(".")[1];
@@ -19,3 +21,8 @@ export const getUserIdFromToken = (token) => {
     return null;
   }
 };
+export function getUserData() {
+  const token = localStorage.getItem("authToken");
+  const userData = jwtDecode(token);
+  return userData;
+}

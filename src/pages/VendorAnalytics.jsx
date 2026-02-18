@@ -83,18 +83,6 @@ const VendorAnalytics = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-md sticky top-0 z-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="text-3xl">🛍️</span>
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                  Shop-Easy
-                </span>
-              </Link>
-            </div>
-          </div>
-        </nav>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -107,39 +95,6 @@ const VendorAnalytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation Bar */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2">
-                <span className="text-3xl">🛍️</span>
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                  Shop-Easy
-                </span>
-              </Link>
-              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
-                <Link
-                  to="/vendor/dashboard"
-                  className="hover:text-orange-600 transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <span>→</span>
-                <span className="text-gray-900 font-semibold">Analytics</span>
-              </div>
-            </div>
-
-            <Link
-              to="/vendor/dashboard"
-              className="text-gray-700 hover:text-orange-600 font-semibold text-sm transition-colors"
-            >
-              ← Back to Dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Header */}

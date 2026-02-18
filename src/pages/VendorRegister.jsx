@@ -1,22 +1,21 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSignupUser } from "../hooks/useSignupUser";
 import { useSignupVendor } from "../hooks/useSignupVendor";
 import toast from "react-hot-toast";
 import { getUserIdFromToken } from "../utils/jwtUtils";
 import { useCreateStore } from "../hooks/useCreateStore";
-import { getAuthToken } from "../services/authApi";
 
 const VendorRegister = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [userId, setUserId] = useState(null); // Will be set after step 1
+  const [userId, setUserId] = useState(null);
   const {
-    signupAsync, // Use signupAsync instead
+    signupAsync,
     error: signupError,
     isLoading: signUpLoading,
   } = useSignupVendor();
   const { createStore, isLoading: storeLoading } = useCreateStore();
+
   // Step 1: User Data
   const [userData, setUserData] = useState({
     Username: "",
@@ -32,12 +31,17 @@ const VendorRegister = () => {
   const [storeData, setStoreData] = useState({
     name: "",
     description: "",
-    logoUrl: "",
-    bannerUrl: "",
     phoneNumber: "",
     address: "",
     isActive: true,
   });
+
+  // Image states
+  const [logoFile, setLogoFile] = useState(null);
+  const [bannerFile, setBannerFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -72,6 +76,88 @@ const VendorRegister = () => {
         [name]: "",
       }));
     }
+  };
+
+  // Handle Logo Upload
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file
+      if (!file.type.startsWith("image/")) {
+        setImageErrors((prev) => ({
+          ...prev,
+          logo: "Please select an image file",
+        }));
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setImageErrors((prev) => ({
+          ...prev,
+          logo: "Image must be less than 5MB",
+        }));
+        return;
+      }
+
+      setLogoFile(file);
+      setImageErrors((prev) => ({ ...prev, logo: null }));
+
+      // Create preview (for display only)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle Banner Upload
+  const handleBannerChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file
+      if (!file.type.startsWith("image/")) {
+        setImageErrors((prev) => ({
+          ...prev,
+          banner: "Please select an image file",
+        }));
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setImageErrors((prev) => ({
+          ...prev,
+          banner: "Image must be less than 10MB",
+        }));
+        return;
+      }
+
+      setBannerFile(file);
+      setImageErrors((prev) => ({ ...prev, banner: null }));
+
+      // Create preview (for display only)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBannerPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove Logo
+  const removeLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setImageErrors((prev) => ({ ...prev, logo: null }));
+    const fileInput = document.getElementById("logoFile");
+    if (fileInput) fileInput.value = "";
+  };
+
+  // Remove Banner
+  const removeBanner = () => {
+    setBannerFile(null);
+    setBannerPreview(null);
+    setImageErrors((prev) => ({ ...prev, banner: null }));
+    const fileInput = document.getElementById("bannerFile");
+    if (fileInput) fileInput.value = "";
   };
 
   // Password Strength
@@ -158,16 +244,13 @@ const VendorRegister = () => {
     if (!validateStep1()) return;
 
     try {
-      // Use signupAsync to get the response
       const response = await signupAsync(userData);
-      // Extract userId
       const extractedUserId = getUserIdFromToken(response.accessToken);
 
       if (!extractedUserId) {
         throw new Error("User ID not found in response");
       }
 
-      // Move to step 2
       setUserId(extractedUserId);
       setCurrentStep(2);
       setErrors({});
@@ -180,7 +263,8 @@ const VendorRegister = () => {
       toast.error(error.message || "Registration failed");
     }
   };
-  // Handle Step 2 Submit (Final)
+
+  // Handle Step 2 Submit - Send File objects directly
   const handleStep2Submit = async (e) => {
     e.preventDefault();
 
@@ -189,24 +273,54 @@ const VendorRegister = () => {
     setIsLoading(true);
 
     try {
-      // Prepare store data with userId
+      const logo = logoFile || null;
+      const banner = bannerFile || null;
+
       const storePayload = {
-        ...storeData,
-        ownerId: userId,
-        phoneNumber: storeData.phoneNumber || userData.phoneNumber,
-        createdAt: new Date().toISOString(),
+        name: storeData.name,
+        description: storeData.description || "",
+        ownerId: parseInt(userId),
+        phoneNumber: storeData.phoneNumber || userData.phoneNumber || "",
+        address: storeData.address || "",
+        isActive: true,
+        logo: logo,
+        banner: banner,
       };
 
-      console.log("Store Registration Data:", storePayload);
+      console.log("📦 Store data:", {
+        ...storePayload,
+        logo: logo
+          ? `File: ${logo.name} (${(logo.size / 1024).toFixed(2)} KB)`
+          : "No logo",
+        banner: banner
+          ? `File: ${banner.name} (${(banner.size / 1024).toFixed(2)} KB)`
+          : "No banner",
+      });
 
       await createStore({
-        storeData: storePayload,
-        userId: userId,
+        ...storePayload,
+        logo: logo,
+        banner: banner,
       });
-      // Navigate to success page or vendor dashboard
-      //navigate("/vendor/dashboard");
+      console.log("✅ Store created successfully");
+      toast.success("Store created successfully! 🎉");
+      navigate("/vendor/dashboard");
     } catch (error) {
-      setErrors({ submit: "Store creation failed. Please try again." });
+      console.error("❌ Store creation error:", error);
+
+      let errorMessage = "Store creation failed. Please try again.";
+
+      if (error.message.includes("JSON")) {
+        errorMessage =
+          "Server error. Please check your connection and try again.";
+      } else if (error.message.includes("Failed to fetch")) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setErrors({ submit: errorMessage });
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +328,6 @@ const VendorRegister = () => {
 
   const handleSocialSignup = (provider) => {
     console.log(`Signup with ${provider}`);
-    // Implement social signup logic here
   };
 
   return (
@@ -620,10 +733,10 @@ const VendorRegister = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={signUpLoading}
                   className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isLoading ? (
+                  {signUpLoading ? (
                     <>
                       <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                       Creating Account...
@@ -707,58 +820,138 @@ const VendorRegister = () => {
                   ></textarea>
                 </div>
 
-                {/* Logo URL */}
+                {/* Logo Upload */}
                 <div>
-                  <label
-                    htmlFor="logoUrl"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
-                  >
-                    Store Logo URL
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Store Logo
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
-                      🖼️
-                    </span>
-                    <input
-                      type="url"
-                      id="logoUrl"
-                      name="logoUrl"
-                      value={storeData.logoUrl}
-                      onChange={handleStoreChange}
-                      placeholder="https://example.com/logo.png"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-200 transition-all duration-300"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Recommended size: 200x200px
-                  </p>
+
+                  {!logoPreview ? (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="logoFile"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="logoFile"
+                        className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors bg-gray-50 hover:bg-orange-50"
+                      >
+                        <span className="text-4xl mb-2">🖼️</span>
+                        <span className="text-sm font-semibold text-gray-700">
+                          Click to upload logo
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          Recommended: 200x200px (Max 5MB)
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="w-full h-40 border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+                        <img
+                          src={logoPreview}
+                          alt="Logo preview"
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {imageErrors.logo && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <span>⚠️</span>
+                      {imageErrors.logo}
+                    </p>
+                  )}
                 </div>
 
-                {/* Banner URL */}
+                {/* Banner Upload */}
                 <div>
-                  <label
-                    htmlFor="bannerUrl"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
-                  >
-                    Store Banner URL
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Store Banner
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
-                      🎨
-                    </span>
-                    <input
-                      type="url"
-                      id="bannerUrl"
-                      name="bannerUrl"
-                      value={storeData.bannerUrl}
-                      onChange={handleStoreChange}
-                      placeholder="https://example.com/banner.png"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-200 transition-all duration-300"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Recommended size: 1200x300px
-                  </p>
+
+                  {!bannerPreview ? (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="bannerFile"
+                        accept="image/*"
+                        onChange={handleBannerChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="bannerFile"
+                        className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors bg-gray-50 hover:bg-orange-50"
+                      >
+                        <span className="text-4xl mb-2">🎨</span>
+                        <span className="text-sm font-semibold text-gray-700">
+                          Click to upload banner
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          Recommended: 1200x300px (Max 10MB)
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="w-full h-48 border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                        <img
+                          src={bannerPreview}
+                          alt="Banner preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeBanner}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {imageErrors.banner && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <span>⚠️</span>
+                      {imageErrors.banner}
+                    </p>
+                  )}
                 </div>
 
                 {/* Store Phone */}
@@ -840,10 +1033,10 @@ const VendorRegister = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || storeLoading}
                     className="flex-1 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {isLoading ? (
+                    {isLoading || storeLoading ? (
                       <>
                         <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
                         Creating Store...
