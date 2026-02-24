@@ -36,7 +36,6 @@ const Navbar = () => {
       // Optional: You might not need window.location.reload() if you manage state properly
       // window.location.reload();
     } catch (error) {
-      console.error("Logout failed:", error);
       // Still navigate to login even if logout fails
       navigate("/login");
     }
@@ -190,17 +189,8 @@ const Navbar = () => {
                         <span>My Profile</span>
                       </div>
                     </Link> */}
-                    <Link
-                      to="/my-orders"
-                      onClick={() => setShowUserDropdown(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span>📦</span>
-                        <span>My Orders</span>
-                      </div>
-                    </Link>
-                    {userData.role === "Vendor" && (
+
+                    {userData.role === "Vendor" ? (
                       <Link
                         to="/vendor/dashboard"
                         onClick={() => setShowUserDropdown(false)}
@@ -209,6 +199,17 @@ const Navbar = () => {
                         <div className="flex items-center gap-3">
                           <span>🏪</span>
                           <span>Vendor Dashboard</span>
+                        </div>
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/my-orders"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span>📦</span>
+                          <span>My Orders</span>
                         </div>
                       </Link>
                     )}

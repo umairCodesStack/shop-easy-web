@@ -5,31 +5,30 @@ import { CartProvider } from "./context/cartContext";
 // Public Pages
 import Home from "./pages/Home";
 import Products from "./pages/Products";
-import ProductDetails from "./pages/ProductDetails";
+import ProductDetails from "./components/products/ProductDetails";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import VendorRegister from "./pages/VendorRegister";
-
-// Customer Protected Pages
 import CartPage from "./pages/CartPage";
 
 // Vendor Protected Pages
-import VendorDashboard from "./pages/VendorDashboard";
-import VendorSuccess from "./pages/VendorSuccess";
-import VendorProducts from "./pages/VendorProduts";
 import AddProduct from "./pages/AddProduct";
-import EditProduct from "./pages/EditProduct";
-import VendorOrders from "./pages/VendorOrders";
-import VendorAnalytics from "./pages/VendorAnalytics";
-import VendorStoreSettings from "./pages/VendorStoreSettings";
+import EditProduct from "./components/products/EditProduct";
+import VendorOrders from "./components/vendor/VendorOrders";
 import VendorLayout from "./components/vendor/VendorLayout";
 import VendorProtectedRoute from "./pages/VendorProtectedRoute";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ProtectedCheckoutRoute from "./pages/ProtectedCheckoutRoute";
+import VendorRegister from "./components/vendor/VendorRegister";
 import Orders from "./pages/Orders";
 import StoresPage from "./pages/StoresPage";
 import AdminPage from "./pages/AdminPage";
+import ProtectedAdminRoute from "./pages/ProtectedAdminRoute";
+import Store from "./pages/Store";
+import VendorDashboard from "./components/vendor/VendorDashboard";
+import VendorProducts from "./components/vendor/VendorProduts";
+import VendorAnalytics from "./components/vendor/VendorAnalytics";
+import VendorStoreSettings from "./components/vendor/VendorStoreSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,7 +80,15 @@ function App() {
             <Route path="/vendor/register" element={<VendorRegister />} />
             <Route path="/my-orders" element={<Orders />} />
             <Route path="/stores" element={<StoresPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/store/:id" element={<Store />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminPage />
+                </ProtectedAdminRoute>
+              }
+            />
             <Route
               path="/checkout"
               element={
@@ -104,7 +111,7 @@ function App() {
               }
             >
               <Route path="dashboard" element={<VendorDashboard />} />
-              <Route path="success" element={<VendorSuccess />} />
+
               <Route path="products" element={<VendorProducts />} />
               <Route path="products/add" element={<AddProduct />} />
               <Route path="products/edit/:id" element={<EditProduct />} />

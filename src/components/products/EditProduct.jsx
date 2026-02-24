@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import useGetProductById from "../hooks/useGetProductById";
-import { updateProduct } from "../services/productsApi";
+import useGetProductById from "../../hooks/useGetProductById";
+import { updateProduct } from "../../services/productsApi";
 
 const EditProduct = () => {
   const { id } = useParams();

@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useGetCustomers } from "../hooks/useGetCustomers";
-import { getUserData } from "../utils/jwtUtils";
-
+import { useGetCustomers } from "../../hooks/useGetCustomers";
+import { getUserData } from "../../utils/jwtUtils";
+import CustomersTable from "./CustomersTable";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 const VendorAnalytics = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("name"); // name, email, totalOrders
-  const [sortOrder, setSortOrder] = useState("asc"); // asc, desc
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const userData = getUserData();
@@ -15,6 +18,78 @@ const VendorAnalytics = () => {
     isLoading,
     error,
   } = useGetCustomers(userData.userId);
+  const handleDownloadExcel = () => {
+    if (!filteredCustomers || filteredCustomers.length === 0) {
+      alert("No customers to export.");
+      return;
+    }
+
+    const worksheetData = filteredCustomers.map((customer, index) => ({
+      "#": index + 1,
+      Name: customer.name || "-",
+      Email: customer.email || "-",
+      Phone: customer.phone || "-",
+      "Total Orders": customer.totalOrders ?? "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+
+    // Column widths
+    worksheet["!cols"] = [
+      { wch: 5 }, // #
+      { wch: 25 }, // Name
+      { wch: 30 }, // Email
+      { wch: 15 }, // Phone
+      { wch: 15 }, // Total Orders
+    ];
+
+    XLSX.writeFile(workbook, "all-customers.xlsx");
+  };
+  const handleDownloadPdf = () => {
+    if (!filteredCustomers || filteredCustomers.length === 0) {
+      alert("No customers to export.");
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("All Customers", 14, 18);
+
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`Total: ${filteredCustomers.length} customers`, 14, 26);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 31);
+
+    autoTable(doc, {
+      startY: 38,
+      head: [["#", "Name", "Email", "Phone", "Total Orders"]],
+      body: filteredCustomers.map((customer, index) => [
+        index + 1,
+        customer.name || "-",
+        customer.email || "-",
+        customer.phone || "-",
+        customer.totalOrders ?? "-",
+      ]),
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: {
+        fillColor: [249, 115, 22],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: { fillColor: [255, 247, 237] },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save("all-customers.pdf");
+  };
 
   // Filter customers based on search query
   const filteredCustomers = customers?.filter((customer) => {
@@ -31,7 +106,6 @@ const VendorAnalytics = () => {
     let aValue = a[sortBy];
     let bValue = b[sortBy];
 
-    // Handle string comparison
     if (typeof aValue === "string") {
       aValue = aValue.toLowerCase();
       bValue = bValue.toLowerCase();
@@ -209,114 +283,28 @@ const VendorAnalytics = () => {
         </div>
 
         {/* Customers Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b-2 border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("name")}
-                  >
-                    <div className="flex items-center gap-2">
-                      Name
-                      {sortBy === "name" && (
-                        <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("email")}
-                  >
-                    <div className="flex items-center gap-2">
-                      Email
-                      {sortBy === "email" && (
-                        <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Phone
-                  </th>
-                  <th
-                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort("totalOrders")}
-                  >
-                    <div className="flex items-center gap-2">
-                      Total Orders
-                      {sortBy === "totalOrders" && (
-                        <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {paginatedCustomers && paginatedCustomers.length > 0 ? (
-                  paginatedCustomers.map((customer, index) => (
-                    <tr
-                      key={customer.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        #{customer.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
-                            {customer.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="text-sm font-semibold text-gray-900">
-                            {customer.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {customer.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {customer.phone}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm font-semibold">
-                          {customer.totalOrders} orders
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button className="text-orange-600 hover:text-orange-700 font-semibold">
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="6"
-                      className="px-6 py-12 text-center text-gray-500"
-                    >
-                      <div className="flex flex-col items-center gap-3">
-                        <span className="text-6xl">👥</span>
-                        <p className="text-lg font-semibold">
-                          No customers found
-                        </p>
-                        <p className="text-sm">
-                          Try adjusting your search query
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <CustomersTable
+          customers={filteredCustomers}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          paginatedCustomers={paginatedCustomers}
+        />
+
+        {/* Download Button */}
+        <div className="flex justify-end gap-3 mt-4 mb-4">
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold transition duration-200"
+            onClick={handleDownloadExcel}
+          >
+            Download as Excel
+          </button>
+          <button
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded font-semibold transition duration-200"
+            onClick={handleDownloadPdf}
+          >
+            Download as PDF
+          </button>
         </div>
 
         {/* Pagination */}

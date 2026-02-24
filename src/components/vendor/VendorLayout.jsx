@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import VendorSidebar from "./VendorSideBar";
 import VendorNavbar from "./VendorNavbar";
+import { getUserData } from "../../utils/jwtUtils";
+import useGetStore from "../../hooks/useGetStore";
+import Spinner from "../common/Spinner";
+import ErrorMessage from "../common/ErrorMessage";
 
 function VendorLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,10 +17,25 @@ function VendorLayout() {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
-
+  const userData = getUserData();
+  const { storeData, error, isLoading } = useGetStore(userData.userId);
+  // if (!storeData.isActive)
+  //   return (
+  //     <ErrorMessage message="Your Store is yet not approved from Admin of Shop-Easy" />
+  //   );
+  if (isLoading) return <Spinner />;
+  if (error) return <ErrorMessage />;
+  if (!isLoading && storeData.isActive === false)
+    return (
+      <ErrorMessage message="Your Store is yet not approved from Admin of Shop-Easy" />
+    );
   return (
     <div className="min-h-screen bg-gray-50">
-      <VendorNavbar toggleSidebar={toggleSidebar} />
+      <VendorNavbar
+        toggleSidebar={toggleSidebar}
+        userData={userData}
+        storeData={storeData}
+      />
 
       <div className="flex relative">
         {/* Mobile Overlay */}

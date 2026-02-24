@@ -12,8 +12,6 @@ function getShortDescription(description, maxLength = 80) {
 }
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCart();
-  console.log(product);
   return (
     <Link
       to={`/products/${product.id}`}
@@ -22,7 +20,7 @@ const ProductCard = ({ product }) => {
       {/* Product Image */}
       <div className="relative overflow-hidden bg-gray-100 aspect-square">
         <img
-          src={product.imageUrl || "https://via.placeholder.com/400"}
+          src={product.imageUrl || product.imageUrls[0]}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />

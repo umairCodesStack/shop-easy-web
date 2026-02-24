@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSignupVendor } from "../hooks/useSignupVendor";
+import { useSignupVendor } from "../../hooks/useSignupVendor";
 import toast from "react-hot-toast";
-import { getUserIdFromToken } from "../utils/jwtUtils";
-import { useCreateStore } from "../hooks/useCreateStore";
+import { getUserIdFromToken } from "../../utils/jwtUtils";
+import { useCreateStore } from "../../hooks/useCreateStore";
 
 const VendorRegister = () => {
   const navigate = useNavigate();

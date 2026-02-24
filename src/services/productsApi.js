@@ -7,7 +7,6 @@ export default async function getProducts() {
   let url = `${API_BASE_URL}/odata/Product`;
 
   try {
-    console.log("Fetching:", url);
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -15,7 +14,7 @@ export default async function getProducts() {
     }
 
     const data = await response.json();
-    console.log("Data received:", data);
+
     return data;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -37,7 +36,6 @@ export async function getTrendingProducts() {
     }
 
     const data = await response.json();
-    console.log("Trending products data received:", data);
     return data.value || data;
   } catch (error) {
     console.error("Error fetching trending products:", error);
@@ -93,7 +91,7 @@ export async function getProductById(id) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Product data received:", data);
+
     return data;
   } catch (error) {
     console.error("Error fetching product by ID:", error);

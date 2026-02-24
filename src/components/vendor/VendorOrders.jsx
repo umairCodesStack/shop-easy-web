@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useGetVendorOrder } from "../hooks/useGetVendorOrder";
-import { getUserData } from "../utils/jwtUtils";
+import { useGetVendorOrder } from "../../hooks/useGetVendorOrder";
+import { getUserData } from "../../utils/jwtUtils";
 
-import { useUpdateOrderStatus } from "../hooks/useUpdateOrderStatus";
+import { useUpdateOrderStatus } from "../../hooks/useUpdateOrderStatus";
 
 const VendorOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,7 +84,7 @@ const VendorOrders = () => {
     try {
       updateOrderStatus({ orderId, newStatus });
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.log(error);
     }
   };
 

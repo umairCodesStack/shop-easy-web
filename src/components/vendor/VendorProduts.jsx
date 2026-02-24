@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useGetStoreProducts } from "../hooks/useGetStoreProducts";
+import { useGetStoreProducts } from "../../hooks/useGetStoreProducts";
 
-import { useDeleteProduct } from "../hooks/useDeleteProduct";
-import { getUserData } from "../utils/jwtUtils";
+import { useDeleteProduct } from "../../hooks/useDeleteProduct";
+import { getUserData } from "../../utils/jwtUtils";
 
 const VendorProducts = () => {
   const navigate = useNavigate();

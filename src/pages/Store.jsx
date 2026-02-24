@@ -1,20 +1,23 @@
 import { useState, useMemo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useParams } from "react-router-dom";
 import ProductCard from "../components/products/ProductCard";
 import useGetProducts from "../hooks/useGetProducts";
 import { PageSize as pageSize } from "../utils/constants";
 import Navbar from "../components/common/Navbar";
-const Products = () => {
+import useGetStore from "../hooks/useGetStore";
+import { useGetStoreProducts } from "../hooks/useGetStoreProducts";
+const Store = () => {
   const [searchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
+  const { id } = useParams();
+  const { storeData, error: storeError, isLoading } = useGetStore(id);
 
-  // Fetch ALL products once
   const {
-    data: allProducts = [],
+    products: allProducts = [],
     isLoading: loading,
     error,
-  } = useGetProducts();
-  //console.log("All Products", allProducts);
+  } = useGetStoreProducts(id);
+  console.log("Store All Products", allProducts);
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -167,12 +170,12 @@ const Products = () => {
     );
   }
 
-  if (error) {
+  if (storeError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <span className="text-6xl mb-4">❌</span>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Error Loading Products
+          Error Loading Store
         </h2>
         <p className="text-gray-600">{error.message}</p>
       </div>
@@ -184,18 +187,69 @@ const Products = () => {
       <Navbar />
 
       {/* Page Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-8">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            {searchQuery
-              ? `Search Results for "${searchQuery}"`
-              : "All Products"}
-          </h1>
-          <p className="text-white/90">
-            Showing {(currentPage - 1) * pageSize + 1} -{" "}
-            {Math.min(currentPage * pageSize, totalCount)} of {totalCount}{" "}
-            products
-          </p>
+      {/* Page Header */}
+      <div className="relative bg-white shadow-md mb-2">
+        {/* Banner */}
+        <div className="relative w-full h-48 md:h-64 overflow-hidden rounded-b-2xl">
+          <img
+            src={
+              storeData?.bannerUrl ||
+              "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1400&auto=format&fit=crop"
+            }
+            alt="Store Banner"
+            className="w-full h-full object-cover"
+          />
+          {/* Gradient overlay at bottom so logo area is readable */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+          {/* Store name + status overlaid bottom-left on banner */}
+          <div className="absolute bottom-4 left-36 md:left-44">
+            <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg leading-tight">
+              {storeData?.name || "My Store"}
+            </h1>
+            <p className="text-white/80 text-sm drop-shadow">
+              {searchQuery ? `Search: "${searchQuery}"` : ""}
+            </p>
+          </div>
+        </div>
+
+        {/* Logo overlapping banner */}
+        <div className="absolute left-6 md:left-10 bottom-[-20px] translate-y-[-30%]">
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
+            {storeData?.logoUrl ? (
+              <img
+                src={storeData.logoUrl}
+                alt={storeData?.storeName || "Store Logo"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-100">
+                🏪
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom bar: product count + status */}
+        <div className="flex items-center justify-between px-6 md:px-10 pt-4 pb-4 pl-36 md:pl-48">
+          <div>
+            {/* <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">
+              Status
+            </p>
+            <sp an className="inline-flex items-center gap-1 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-0.5 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+              {storeData?.status || "Pending"}
+            </sp>*/}
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">
+              Products
+            </p>
+            <p className="text-sm font-bold text-gray-700">
+              Showing {(currentPage - 1) * pageSize + 1}–
+              {Math.min(currentPage * pageSize, totalCount)} of {totalCount}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -438,4 +492,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Store;

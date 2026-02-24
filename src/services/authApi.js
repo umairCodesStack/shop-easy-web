@@ -40,8 +40,8 @@ export async function login(credentials) {
       },
       body: JSON.stringify(credentials),
     });
-    console.log("Login response status:", response.status);
     const data = await response.json();
+
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
     }
@@ -54,6 +54,8 @@ export async function login(credentials) {
       setItemWithExpiry("authToken", data.accessToken, minutesUntilExpiry);
 
       localStorage.setItem("tokenExpiresAt", data.expiresAt);
+    } else {
+      setItemWithExpiry("authToken", data.accessToken, 5);
     }
     return data;
   } catch (error) {
@@ -160,6 +162,22 @@ export async function updatePassword(passwordData) {
 export async function getUserByEmail(email) {
   const response = await fetch(
     `${API_BASE_URL}/api/UserAuth/getUserByEmail?email=${encodeURIComponent(email)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user: ${response.status}`);
+  }
+  const data = await response.json();
+  return data;
+}
+export async function getUserById(userId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/UserAuth/getUserById?userId=${encodeURIComponent(userId)}`,
     {
       method: "GET",
       headers: {

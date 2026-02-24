@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useUpdateStore } from "../hooks/useUpdateStore";
+import { useUpdateStore } from "../../hooks/useUpdateStore";
 import toast from "react-hot-toast";
-import useGetStore from "../hooks/useGetStore";
-import { getUserData } from "../utils/jwtUtils";
-import { useUpdateUser } from "../hooks/useUpdateUser";
-import { useGetUser } from "../hooks/useGetUser";
-import { useUpdateUserPassword } from "../hooks/useUpdateUserPassword";
+import useGetStore from "../../hooks/useGetStore";
+import { getUserData } from "../../utils/jwtUtils";
+import { useUpdateUser } from "../../hooks/useUpdateUser";
+import { useGetUser } from "../../hooks/useGetUser";
+import { useUpdateUserPassword } from "../../hooks/useUpdateUserPassword";
 
 const VendorStoreSettings = () => {
   const navigate = useNavigate();
@@ -252,7 +252,6 @@ const VendorStoreSettings = () => {
       setRemovedBanner(false);
       setIsEditingImages(false);
     } catch (err) {
-      console.error("❌ Update error:", err);
       toast.error(err?.message || "Failed to update store settings");
     }
   };
@@ -263,7 +262,6 @@ const VendorStoreSettings = () => {
     try {
       if (!ownerData.id) {
         toast.error("User ID is missing!");
-        console.error("❌ No user ID in ownerData:", ownerData);
         return;
       }
 

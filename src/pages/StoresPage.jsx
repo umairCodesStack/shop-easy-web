@@ -3,7 +3,7 @@ import React from "react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import StoreCard from "../components/vendor/StoreCard";
-import useGetStore from "../hooks/useGetStore";
+
 import { useGetAllStores } from "../hooks/useGetAllStores";
 
 // Skeleton for loading (optional, add if you have/need one)
@@ -15,7 +15,8 @@ function StoreCardSkeleton() {
 
 const StoresPage = () => {
   // Fetch all stores/vendors
-  const { data: stores, isLoading, error } = useGetAllStores();
+  const { data: storesData, isLoading, error } = useGetAllStores();
+  const stores = storesData?.filter((store) => store.isActive === true);
 
   return (
     <>

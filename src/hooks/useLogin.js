@@ -16,6 +16,8 @@ export function useLogin() {
 
       if (data.role === "Vendor") {
         navigate("/vendor/dashboard");
+      } else if (data.role === "Admin") {
+        navigate("/admin");
       } else {
         navigate("/");
       }

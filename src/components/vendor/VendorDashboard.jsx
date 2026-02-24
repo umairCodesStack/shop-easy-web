@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useGetStoreProducts } from "../hooks/useGetStoreProducts";
-import { getUserData } from "../utils/jwtUtils";
-import { useGetVendorOrder } from "../hooks/useGetVendorOrder";
-import Orders from "./Orders";
+import { useGetStoreProducts } from "../../hooks/useGetStoreProducts";
+import { getUserData } from "../../utils/jwtUtils";
+import { useGetVendorOrder } from "../../hooks/useGetVendorOrder";
+import Orders from "../../pages/Orders";
 import VendorOrders from "./VendorOrders";
-import useGetStore from "../hooks/useGetStore";
-import { useGetCustomers } from "../hooks/useGetCustomers";
+import useGetStore from "../../hooks/useGetStore";
+import { useGetCustomers } from "../../hooks/useGetCustomers";
 
 const VendorDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +28,7 @@ const VendorDashboard = () => {
     isLoading: loadingCustomers,
     error: customersError,
   } = useGetCustomers(userData.userId);
-  console.log(customers);
+
   const totalProducts = products ? products.length : 0;
   const totalOrders = vendorOrders ? vendorOrders.length : 0;
   const pendingOrders =

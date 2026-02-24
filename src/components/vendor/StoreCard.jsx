@@ -41,7 +41,7 @@ function StoreCard({ vendor }) {
 
   return (
     <Link
-      to={`/stores`}
+      to={`/store/${vendor.ownerId}`}
       className="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary-500"
     >
       {/* Vendor Logo & Info */}

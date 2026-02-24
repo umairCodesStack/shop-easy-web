@@ -152,10 +152,10 @@ export async function createStore(storeData) {
   }
 }
 export async function getStoreByOwnerId(ownerId) {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error("User is not authenticated");
-  }
+  // const token = getAuthToken();
+  // if (!token) {
+  //   throw new Error("User is not authenticated");
+  // }
 
   const response = await fetch(
     `${API_BASE_URL}/api/Store/getStoreByOwnerId?ownerId=${ownerId}`,
@@ -163,7 +163,7 @@ export async function getStoreByOwnerId(ownerId) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        // Authorization: `Bearer ${token}`,
       },
     },
   );
@@ -339,6 +339,6 @@ export async function getAllStores() {
     throw new Error(`Failed to fetch store: ${response.status}`);
   }
   const data = await response.json();
-  console.log("All Stores", data);
+
   return data;
 }

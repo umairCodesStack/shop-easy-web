@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import useGetProductById from "../hooks/useGetProductById";
-import { useCart } from "../context/cartContext";
-import Navbar from "../components/common/Navbar";
+import useGetProductById from "../../hooks/useGetProductById";
+import { useCart } from "../../context/cartContext";
+import Navbar from "../common/Navbar";
 
 // Helper function to get color name from hex value
 const getColorName = (hex) => {

@@ -1,0 +1,218 @@
+import React, { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/cartContext";
+import { getUserData } from "../../utils/jwtUtils";
+import { logout } from "../../services/authApi";
+
+const AdminNavbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const navigate = useNavigate();
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
+
+  useEffect(() => {
+    setUserData(getUserData());
+  }, []);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setShowUserDropdown(false);
+      setUserData(null);
+      navigate("/login");
+    } catch {
+      navigate("/login");
+    }
+  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const getUserInitial = (name) => (name ? name.charAt(0).toUpperCase() : "U");
+
+  return (
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-4xl">🛍️</span>
+          <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+            Shop-Easy
+          </span>
+        </Link>
+
+        {userData ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowUserDropdown(!showUserDropdown)}
+              className="flex items-center gap-3 bg-primary-50 hover:bg-primary-100 px-4 py-2 rounded-full transition-colors duration-300"
+            >
+              <div className="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
+                {getUserInitial(userData.name)}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {userData.name}
+                </p>
+                <p className="text-xs text-gray-500">{userData.role}</p>
+              </div>
+              <svg
+                className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu & Click-Outside Overlay */}
+            {showUserDropdown && (
+              <>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="font-semibold text-gray-900">
+                      {userData.name}
+                    </p>
+                    <p className="text-sm text-gray-500">{userData.email}</p>
+                    <span className="inline-block mt-1 px-2 py-1 bg-primary-100 text-primary-700 text-xs font-semibold rounded">
+                      {userData.role}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-gray-200 mt-2 pt-2">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span>🚪</span>
+                        <span>Logout</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowUserDropdown(false)}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          <NavLink
+            to="/login"
+            className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105"
+          >
+            Login
+          </NavLink>
+        )}
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={toggleMobileMenu}
+          className="lg:hidden p-2 text-gray-700 hover:text-primary-600"
+        >
+          {isMobileMenuOpen ? (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile User Section & Search */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden pt-3 border-t border-gray-200">
+          <form onSubmit={handleSearch} className="mb-3 px-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              className="w-full bg-gray-100 rounded-full px-4 py-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-gray-600"
+            />
+          </form>
+          {userData ? (
+            <>
+              <div className="px-4 py-3 bg-primary-50 rounded-lg mb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                    {getUserInitial(userData.name)}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">
+                      {userData.name}
+                    </p>
+                    <p className="text-xs text-gray-500">{userData.email}</p>
+                  </div>
+                </div>
+                <span className="inline-block px-2 py-1 bg-primary-200 text-primary-800 text-xs font-semibold rounded">
+                  {userData.role}
+                </span>
+              </div>
+
+              <button
+                onClick={() => {
+                  handleLogout();
+                  toggleMobileMenu();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors duration-300 mt-2"
+              >
+                <span className="text-xl">🚪</span>
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              onClick={toggleMobileMenu}
+              className="block w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-lg font-semibold text-center transition-colors duration-300"
+            >
+              Login
+            </NavLink>
+          )}
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default AdminNavbar;
